@@ -1,6 +1,5 @@
 package com.psywerx.inarow;
 
-
 import android.app.Activity;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
@@ -43,11 +42,9 @@ public class MainActivity extends Activity {
 
 class MyGLSurfaceView extends GLSurfaceView {
 
+    private MyRenderer mRenderer;
 
-
-	private MyRenderer mRenderer;
-
-	public MyGLSurfaceView(Context context) {
+    public MyGLSurfaceView(Context context) {
         super(context);
 
         // Create an OpenGL ES 2.0 context.
@@ -82,15 +79,17 @@ class MyGLSurfaceView extends GLSurfaceView {
 
                 // reverse direction of rotation above the mid-line
                 if (y > getHeight() / 2) {
-                  dx = dx * -1 ;
+                    dx = dx * -1;
                 }
 
                 // reverse direction of rotation to left of the mid-line
                 if (x < getWidth() / 2) {
-                  dy = dy * -1 ;
+                    dy = dy * -1;
                 }
 
-                mRenderer.mAngle += (dx + dy) * TOUCH_SCALE_FACTOR;  // = 180.0f / 320
+                mRenderer.mAngle += (dx + dy) * TOUCH_SCALE_FACTOR; // = 180.0f
+                                                                    // /
+                                                                    // 320
                 requestRender();
         }
 
