@@ -86,8 +86,9 @@ class MyGLSurfaceView extends GLSurfaceView {
                 if (x < getWidth() / 2) {
                     dy = dy * -1;
                 }
-
-                game.mAngle += (dx + dy) * TOUCH_SCALE_FACTOR; // = 180.0f
+                mRenderer.game.dx = dx;
+                mRenderer.game.dy = dy;
+                mRenderer.game.mAngle += (dx + dy) * TOUCH_SCALE_FACTOR; // = 180.0f
                                                                     // /
                                                                     // 320
                 requestRender();
