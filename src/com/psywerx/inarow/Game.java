@@ -1,9 +1,6 @@
 package com.psywerx.inarow;
 
-import java.util.Arrays;
-
 import android.opengl.Matrix;
-import android.util.Log;
 
 public class Game {
     
@@ -23,15 +20,18 @@ public class Game {
 
     public void draw(float[] mMVPMatrix, float[] mRotationMatrix) {
 
-        mSquare.draw(mMVPMatrix);
         // Create a rotation for the triangle
         // long time = SystemClock.uptimeMillis() % 4000L;
         // float angle = 0.090f * ((int) time);
         Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, -1.0f);
-        float[] translate = new float[16];
+        float[] mTranslationMatrix = new float[16];
         
+        //Matrix.translateM(translate, 0, dx, dy, 0);
         // Combine the rotation matrix with the projection and camera view
-        Matrix.translateM(mMVPMatrix, 0, dx/10f, dy/10f, 0);
+//        Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0);
+
+        Matrix.scaleM(mMVPMatrix, 0, 1-dx*0.001f, 1-dx*0.001f, 1);
+        mSquare.draw(mMVPMatrix);
         mTriangle.draw(mMVPMatrix);
 
     }
