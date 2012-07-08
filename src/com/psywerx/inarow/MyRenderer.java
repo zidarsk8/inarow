@@ -31,7 +31,6 @@ public class MyRenderer implements GLSurfaceView.Renderer {
     private final float[] mMVPMatrix = new float[16];
     private final float[] mProjMatrix = new float[16];
     private final float[] mVMatrix = new float[16];
-    private final float[] mRotationMatrix = new float[16];
 
     protected Game game;
 
@@ -55,7 +54,7 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
 
         // Draw frame
-        game.draw(mMVPMatrix, mRotationMatrix);
+        game.draw(mMVPMatrix);
         
     }
 
