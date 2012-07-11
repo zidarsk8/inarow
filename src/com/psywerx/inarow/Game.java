@@ -28,7 +28,7 @@ public class Game {
         // Combine the rotation matrix with the projection and camera view
 //        Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0);
         Matrix.scaleM(mMVPMatrix, 0, scalex*0.001f, scalex*0.001f, 1);
-        mSquare.draw(mMVPMatrix);
+//        mSquare.draw(mMVPMatrix);
         mTriangle.draw(mMVPMatrix);
 
     }

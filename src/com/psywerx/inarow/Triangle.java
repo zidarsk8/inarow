@@ -29,10 +29,15 @@ class Triangle {
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
     static float triangleCoords[] = { // in counterclockwise order:
-            0.0f, 0.622008459f, 0.0f, // top
-            -0.5f, -0.311004243f, 0.0f, // bottom left
-            0.5f, -0.311004243f, 0.0f, // bottom right
-            1.0f, 1.0f, 0.0f,    };
+           0.170000f, 0.000000f, -0.170000f,
+           0.170000f, 0.000000f, 0.170000f,
+           -0.170000f, 0.000000f, 0.170000f,
+           -0.170000f, 0.000000f, -0.170000f,
+           0.039231f, 3.580000f, -0.039231f,
+           0.039231f, 3.580000f, 0.039231f,
+           -0.039231f, 3.580000f, 0.039231f,
+           -0.039231f, 3.580000f, -0.039231f,  };
+
     private final int vertexCount = triangleCoords.length / COORDS_PER_VERTEX;
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per
                                                             // vertex
@@ -40,13 +45,12 @@ class Triangle {
     // Set color with red, green, blue and alpha (opacity) values
     float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 1.0f };
     
-    private final short drawOrder[] = { 0, 1, 2, 0, 2, 3 }; 
 
     public Triangle() {
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
         // (number of coordinate values * 4 bytes per float)
-                drawOrder.length * 2);
+                triangleCoords.length * 4);
         // use the device hardware's native byte order
         bb.order(ByteOrder.nativeOrder());
 
