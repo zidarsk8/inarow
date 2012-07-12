@@ -20,6 +20,7 @@ public class MainActivity extends Activity {
         // as the ContentView for this Activity
         mGLView = new MyGLSurfaceView(this);
         setContentView(mGLView);
+        
     }
 
     @Override
@@ -50,6 +51,7 @@ class MyGLSurfaceView extends GLSurfaceView {
     public MyGLSurfaceView(Context context) {
         super(context);
 
+        ModelLoader.parseFile(context, "piller");
         // Create an OpenGL ES 2.0 context.
         setEGLContextClientVersion(2);
 

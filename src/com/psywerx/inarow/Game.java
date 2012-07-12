@@ -10,12 +10,10 @@ public class Game {
     public volatile float scalex = 0;
     public volatile float scaley = 0;
     
-    private Square mSquare;
     private Triangle mTriangle;
     
     public Game(){
         mTriangle = new Triangle();
-        mSquare = new Square();
     }
 
     public void draw(float[] mMVPMatrix) {
