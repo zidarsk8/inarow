@@ -48,10 +48,9 @@ public class ModelLoader {
                 if (split[0].equals("f")) {
                     for (int i = 1; i < split.length; i++) {
                         String[] s = split[i].split("/");
-                        if (s.length == 3) {
-
-                            faceVertices.add(Integer.parseInt(s[0]));
-                            faceNormals.add(Integer.parseInt(s[2]));
+                        if (s.length == 2) {
+                            faceVertices.add(Integer.parseInt(s[0])-1);
+                            faceNormals.add(Integer.parseInt(s[2])-1);
                         }
                     }
                 }
