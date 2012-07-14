@@ -1,19 +1,18 @@
 package com.psywerx.inarow;
 
-import android.opengl.Matrix;
+import android.content.Context;
 
 public class Game {
     
     // Declare as volatile because we are updating it from another thread
     public volatile int mState = 0;
     public volatile float mAngle;
-    public volatile float scalex = 0;
-    public volatile float scaley = 0;
     
-    private Triangle mTriangle;
+    private Model mModel;
     
-    public Game(){
-        mTriangle = new Triangle();
+    public Game(Context context){
+        //mTriangle = new Square();
+        mModel = ModelLoader.getModel(context, "piller");
     }
 
     public void draw(float[] mMVPMatrix) {
@@ -25,9 +24,10 @@ public class Game {
         //Matrix.translateM(translate, 0, dx, dy, 0);
         // Combine the rotation matrix with the projection and camera view
 //        Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0);
-        Matrix.scaleM(mMVPMatrix, 0, scalex*0.001f, scalex*0.001f, 1);
+        
 //        mSquare.draw(mMVPMatrix);
-        mTriangle.draw(mMVPMatrix);
+        //mTriangle.draw(mMVPMatrix);
+        mModel.draw(mMVPMatrix);
 
     }
 

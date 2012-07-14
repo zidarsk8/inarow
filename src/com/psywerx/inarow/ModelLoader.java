@@ -3,6 +3,7 @@ package com.psywerx.inarow;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+
 import android.content.Context;
 import android.content.res.AssetManager;
 
@@ -15,7 +16,7 @@ import android.content.res.AssetManager;
  */
 public class ModelLoader {
 
-    public static void parseFile(Context context, String filename) {
+    public static Model getModel(Context context, String filename) {
         try {
             InputStreamReader src = new InputStreamReader(context.getAssets().open(
                     filename + ".obj", AssetManager.ACCESS_STREAMING));
@@ -48,16 +49,20 @@ public class ModelLoader {
                 if (split[0].equals("f")) {
                     for (int i = 1; i < split.length; i++) {
                         String[] s = split[i].split("/");
-                        if (s.length == 2) {
+                        L.d(String.format("%d length", s.length));
+                        if (s.length == 3) {
                             faceVertices.add(Integer.parseInt(s[0])-1);
                             faceNormals.add(Integer.parseInt(s[2])-1);
                         }
                     }
                 }
             }
+            L.d(faceVertices.toString());
+            return new Model(vertices, normals, faceVertices);
 
         } catch (Exception e) {
             L.d("Error reading file: " + e.toString());
         }
+        return null;
     }
 }

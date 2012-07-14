@@ -19,6 +19,7 @@ package com.psywerx.inarow;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -31,15 +32,25 @@ public class MyRenderer implements GLSurfaceView.Renderer {
     private final float[] mMVPMatrix = new float[16];
     private final float[] mProjMatrix = new float[16];
     private final float[] mVMatrix = new float[16];
+    
+    public volatile float dx = 0;
+    public volatile float dy = 0;
+    public volatile float dz = 0;
 
     protected Game game;
+
+    private Context context;
+    
+    public MyRenderer(Context context){
+        this.context = context;
+    }
 
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
 
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        game = new Game();
+        game = new Game(context);
     }
 
     public void onDrawFrame(GL10 unused) {
@@ -48,11 +59,15 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         // Set the camera position (View matrix)
-        Matrix.setLookAtM(mVMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(mVMatrix, 0, dx, dy, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
 
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
 
+        
+        
+        Matrix.scaleM(mMVPMatrix, 0, dz*0.001f, dz*0.001f, 1);
+        
         // Draw frame
         game.draw(mMVPMatrix);
         
@@ -67,7 +82,7 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
-        Matrix.frustumM(mProjMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        Matrix.frustumM(mProjMatrix, 0, -ratio, ratio, -1, 1, 1, 20);
 
     }
 
