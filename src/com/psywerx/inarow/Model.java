@@ -11,6 +11,7 @@ import android.opengl.GLES20;
 
 import com.psywerx.utils.L;
 import com.psywerx.utils.RawResourceReader;
+import com.psywerx.utils.ShaderHelper;
 
 public class Model {
     // number of coordinates per vertex in this array
@@ -61,8 +62,8 @@ public class Model {
         mFacesCount = faces.size();
         // prepare shaders and OpenGL programInitModel
 
-        int vertexShader = MyRenderer.loadShader(GLES20.GL_VERTEX_SHADER, RawResourceReader.readFile(context, R.raw.vertexshader));
-        int fragmentShader = MyRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, RawResourceReader.readFile(context, R.raw.fragmentshader));
+        int vertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, RawResourceReader.readFile(context, R.raw.vertexshader));
+        int fragmentShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, RawResourceReader.readFile(context, R.raw.fragmentshader));
 
         mProgram = GLES20.glCreateProgram(); // create empty OpenGL Program
         GLES20.glAttachShader(mProgram, vertexShader); // add the vertex shader

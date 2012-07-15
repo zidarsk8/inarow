@@ -5,6 +5,8 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
+import com.psywerx.utils.ShaderHelper;
+
 import android.opengl.GLES20;
 
 
@@ -65,8 +67,8 @@ class Square {
         drawListBuffer.position(0);
 
         // prepare shaders and OpenGL program
-        int vertexShader = MyRenderer.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
-        int fragmentShader = MyRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
+        int vertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
+        int fragmentShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
 
         mProgram = GLES20.glCreateProgram(); // create empty OpenGL Program
         GLES20.glAttachShader(mProgram, vertexShader); // add the vertex shader

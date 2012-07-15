@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import com.psywerx.utils.ShaderHelper;
+
 import android.opengl.GLES20;
 
 class Triangle {
@@ -63,8 +65,8 @@ class Triangle {
 
         // prepare shaders and OpenGL programInitModel
         
-        int vertexShader = MyRenderer.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
-        int fragmentShader = MyRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
+        int vertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
+        int fragmentShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
 
         mProgram = GLES20.glCreateProgram(); // create empty OpenGL Program
         GLES20.glAttachShader(mProgram, vertexShader); // add the vertex shader
