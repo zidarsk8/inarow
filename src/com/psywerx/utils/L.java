@@ -1,4 +1,4 @@
-package com.psywerx.inarow;
+package com.psywerx.utils;
 
 import android.util.Log;
 

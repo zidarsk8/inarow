@@ -6,23 +6,15 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
+import android.content.Context;
 import android.opengl.GLES20;
+
+import com.psywerx.utils.L;
+import com.psywerx.utils.RawResourceReader;
 
 public class Model {
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
-
-    private String mVertexShaderCode =
-    // This matrix member variable provides a hook to manipulate
-    // the coordinates of the objects that use this vertex shader
-    "uniform mat4 uMVPMatrix;" +
-
-    "attribute vec4 vPosition;" + "void main() {" +
-    // the matrix must be included as a modifier of gl_Position
-            "  gl_Position = vPosition * uMVPMatrix;" + "}";
-
-    private String mFragmentShaderCode = "precision mediump float;" + "uniform vec4 vColor;"
-            + "void main() {" + "  gl_FragColor = vColor;" + "}";
 
     private final FloatBuffer mVertexBuffer;
     private final int mProgram;
@@ -39,7 +31,8 @@ public class Model {
 
     private IntBuffer drawListBuffer;
 
-    public Model(ArrayList<Float> vertices, ArrayList<Float> normals, ArrayList<Integer> faces) {
+    public Model(Context context, ArrayList<Float> vertices, ArrayList<Float> normals, ArrayList<Integer> faces) {
+        
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
         // (number of coordinate values * 4 bytes per float)
@@ -68,8 +61,8 @@ public class Model {
         mFacesCount = faces.size();
         // prepare shaders and OpenGL programInitModel
 
-        int vertexShader = MyRenderer.loadShader(GLES20.GL_VERTEX_SHADER, mVertexShaderCode);
-        int fragmentShader = MyRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, mFragmentShaderCode);
+        int vertexShader = MyRenderer.loadShader(GLES20.GL_VERTEX_SHADER, RawResourceReader.readFile(context, R.raw.vertexshader));
+        int fragmentShader = MyRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, RawResourceReader.readFile(context, R.raw.fragmentshader));
 
         mProgram = GLES20.glCreateProgram(); // create empty OpenGL Program
         GLES20.glAttachShader(mProgram, vertexShader); // add the vertex shader

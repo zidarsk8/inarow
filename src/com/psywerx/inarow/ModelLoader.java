@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import com.psywerx.utils.L;
+
 import android.content.Context;
 import android.content.res.AssetManager;
 
@@ -58,7 +60,7 @@ public class ModelLoader {
                 }
             }
             L.d(faceVertices.toString());
-            return new Model(vertices, normals, faceVertices);
+            return new Model(context, vertices, normals, faceVertices);
 
         } catch (Exception e) {
             L.d("Error reading file: " + e.toString());
