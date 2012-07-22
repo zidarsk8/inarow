@@ -40,6 +40,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
     protected Game game;
 
     private Context context;
+
+    private Square square;
     
     public MyRenderer(Context context){
         this.context = context;
@@ -51,6 +53,7 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         game = new Game(context);
+        square = new Square();
     }
 
     public void onDrawFrame(GL10 unused) {
@@ -69,8 +72,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         Matrix.scaleM(mMVPMatrix, 0, dz*0.001f, dz*0.001f, 1);
         
         // Draw frame
-        game.draw(mMVPMatrix);
-        
+        //game.draw(mMVPMatrix, mVMatrix);
+        square.draw(mMVPMatrix);
     }
 
     public void onSurfaceChanged(GL10 unused, int width, int height) {

@@ -15,7 +15,7 @@ public class Game {
         mModel = ModelLoader.getModel(context, "piller");
     }
 
-    public void draw(float[] mMVPMatrix) {
+    public void draw(float[] mMVPMatrix, float[] mVMatrix) {
 
         // Create a rotation for the triangle
         // long time = SystemClock.uptimeMillis() % 4000L;
@@ -27,7 +27,7 @@ public class Game {
         
 //        mSquare.draw(mMVPMatrix);
         //mTriangle.draw(mMVPMatrix);
-        mModel.draw(mMVPMatrix);
+        mModel.draw(mMVPMatrix, mVMatrix);
 
     }
 

@@ -99,7 +99,7 @@ class MyGLSurfaceView extends GLSurfaceView {
             case MotionEvent.ACTION_MOVE:
                 
                 pi += (e.getX() - mPrevX)*0.01d;
-                theta += (e.getY() - mPrevY)*0.1d;
+                theta += (e.getY() - mPrevY)*0.01d;
                 mRenderer.dx = 5f * (float) (Math.sin(pi)*Math.cos(theta));
                 mRenderer.dy = 5f * (float) (Math.cos(pi)*Math.sin(theta));
                 mPrevX = e.getX();
