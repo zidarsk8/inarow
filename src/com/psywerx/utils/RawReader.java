@@ -7,9 +7,9 @@ import java.io.InputStreamReader;
 
 import android.content.Context;
 
-public class RawResourceReader
+public class RawReader
 {
-    public static String readFile(final Context context,
+    public static String readGLSL(final Context context,
             final int resourceId)
     {
         final InputStream inputStream = context.getResources().openRawResource(

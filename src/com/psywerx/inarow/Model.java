@@ -1,156 +1,109 @@
 package com.psywerx.inarow;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
-
 import android.content.Context;
-import android.opengl.GLES20;
+import android.content.res.AssetManager;
 import android.opengl.Matrix;
 
-import com.psywerx.utils.L;
-import com.psywerx.utils.RawResourceReader;
-import com.psywerx.utils.ShaderHelper;
-
 public class Model {
-    // number of coordinates per vertex in this array
-    static final int COORDS_PER_VERTEX = 3;
-
-    private final FloatBuffer mVertexBuffer;
-    private final int mProgram;
-    private int mPositionHandle;
-    private int mColorHandle;
-    private int mMVPMatrixHandle;
-
-    private final int mFacesCount;
-    private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per
-                                                            // vertex
-
-    // Set color with red, green, blue and alpha (opacity) values
-    float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 1.0f };
-
-    private IntBuffer drawListBuffer;
-
-    private int mNormalHandle;
-
-    private FloatBuffer mNormalBuffer;
-
-    private int mLightPosHandle;
-
-    private int mMVMatrixHandle;
-
-    private float[] mModelMatrix;
-
-    public Model(Context context, ArrayList<Float> vertices, ArrayList<Float> normals, ArrayList<Integer> faces) {
-        
-        // initialize vertex byte buffer for shape coordinates
-        ByteBuffer bb = ByteBuffer.allocateDirect(
-        // (number of coordinate values * 4 bytes per float)
-                vertices.size() * 4);
-        
-        L.d(faces.toString() + " FFFF");
-
-        // use the device hardware's native byte order
-        bb.order(ByteOrder.nativeOrder());
-
-        // create a floating point buffer from the ByteBuffer
-        mVertexBuffer = bb.asFloatBuffer();
-        // add the coordinates to the FloatBuffer
-        mVertexBuffer.put(toPrimitiveFloat(vertices));
-        // set the buffer to read the first coordinate
+    private final int BYTES_PER_FLOAT = 4;
+    
+    public final FloatBuffer mVertexBuffer;
+    public final FloatBuffer mTextureBuffer;
+    public final FloatBuffer mNormalBuffer;
+    public float[] mMatrix;
+    
+    private Model(ArrayList<Float> vertices, ArrayList<Float> normals, ArrayList<Float> textures) {
+        mVertexBuffer = ByteBuffer.allocateDirect(vertices.size() * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        for(Float i: vertices) {
+            mVertexBuffer.put(i);
+        }
         mVertexBuffer.position(0);
-
-        // initialize byte buffer for the draw list
-        ByteBuffer dlb = ByteBuffer.allocateDirect(
-        // (# of coordinate values * 2 bytes per short)
-                faces.size() * 4);
-        dlb.order(ByteOrder.nativeOrder());
-        drawListBuffer = dlb.asIntBuffer();
-        drawListBuffer.put(toPrimitiveInteger(faces));
-        drawListBuffer.position(0);
-        mFacesCount = faces.size();
         
+        mTextureBuffer = ByteBuffer.allocateDirect(textures.size() * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        for(Float i: textures) {
+            mTextureBuffer.put(i);
+        }
+        mTextureBuffer.position(0);
         
-     // initialize byte buffer for the draw list
-        bb = ByteBuffer.allocateDirect(
-        // (# of coordinate values * 2 bytes per short)
-                normals.size() * 4);
-        bb.order(ByteOrder.nativeOrder());
-        mNormalBuffer = bb.asFloatBuffer();
-        mNormalBuffer.put(toPrimitiveFloat(normals));
+        mNormalBuffer = ByteBuffer.allocateDirect(normals.size() * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        for(Float i: normals) {
+            mNormalBuffer.put(i);
+        }
         mNormalBuffer.position(0);
-
-        int vertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, RawResourceReader.readFile(context, R.raw.vertexshader));
-        int fragmentShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, RawResourceReader.readFile(context, R.raw.fragmentshader));
-
-        mProgram = ShaderHelper.createAndLinkProgram(vertexShader, fragmentShader, 
-                                                     new String[]{ "a_Position", "a_Color", "a_Normal" });
-
-    }
-
-    private short[] toPrimitiveShort(ArrayList<Short> arr) {
-        short[] primitive = new short[arr.size()];
-        for (int i = 0; i < arr.size(); i++) {
-            primitive[i] = (short) arr.get(i);
-        }
-        return primitive;
-    }
-    
-    private int[] toPrimitiveInteger(ArrayList<Integer> arr) {
-        int[] primitive = new int[arr.size()];
-        for (int i = 0; i < arr.size(); i++) {
-            primitive[i] = (int) arr.get(i);
-        }
-        return primitive;
-    }
-    
-    private float[] toPrimitiveFloat(ArrayList<Float> arr) {
-        float[] primitive = new float[arr.size()];
-        for (int i = 0; i < arr.size(); i++) {
-            primitive[i] = (float) arr.get(i);
-        }
-        return primitive;
-    }
-    
-    public void draw(float[] mvpMatrix, float[] mVMatrix) {
-        // Add program to OpenGL environment
-        GLES20.glUseProgram(mProgram);
         
+        mMatrix = new float[16];
+        Matrix.setIdentityM(mMatrix, 0);
+    }
+    
+    public static Model getModel(Context context, String filename) {
+        try {
+            InputStreamReader src = new InputStreamReader(context.getAssets().open(filename + ".obj", AssetManager.ACCESS_STREAMING));
+            BufferedReader brc = new BufferedReader(src);
+            String line;
 
-        // get handle to vertex shader's vPosition member
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "a_Position");
-        mMVMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix"); 
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "a_Color");
-        mNormalHandle = GLES20.glGetAttribLocation(mProgram, "a_Normal");
+            ArrayList<Float> vertices = new ArrayList<Float>();
+            ArrayList<Float> normals = new ArrayList<Float>();
+            ArrayList<Float> textures = new ArrayList<Float>();
+            int vertIndex, textIndex, normIndex;
+            
+            ArrayList<Float> resultVertices = new ArrayList<Float>();
+            ArrayList<Float> resultNormals = new ArrayList<Float>();
+            ArrayList<Float> resultTextures = new ArrayList<Float>();
+            
+            while ((line = brc.readLine()) != null) {
+                if (line.startsWith("#"))
+                    continue;
 
-        // Enable a handle to the triangle vertices
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
+                String[] split = line.split(" ");
+                if (split.length == 0)
+                    continue;
 
-        // Prepare the coordinate data
-        GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false,
-                vertexStride, mVertexBuffer);
-
-        // Prepare the normals data
-        GLES20.glVertexAttribPointer(mNormalHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false,
-                vertexStride, mNormalBuffer);
-
-        
-        // Pass in the modelview matrix.
-
-        // Set color for drawing the triangle
-        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
-
-        // Apply the projection and view transformation
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
-
-        // Draw the square
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, mFacesCount, GLES20.GL_UNSIGNED_INT,
-                drawListBuffer);
-
-        // Disable vertex array
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
+                if (split[0].equals("v")) {
+                    for (int i = 1; i < split.length; i++) {
+                        vertices.add(Float.parseFloat(split[i]));
+                    }
+                }
+                if (split[0].equals("vn")) {
+                    for (int i = 1; i < split.length; i++) {
+                        normals.add(Float.parseFloat(split[i]));
+                    }
+                }
+                if (split[0].equals("vt")) {
+                    for (int i = 1; i < split.length; i++) {
+                        textures.add(Float.parseFloat(split[i]));
+                    }
+                }
+                
+                
+                if (split[0].equals("f")) {
+                    for (int i = 1; i < split.length; i++) {
+                        String[] s = split[i].split("/");
+                        vertIndex = Integer.parseInt(s[0])-1;
+                        textIndex = Integer.parseInt(s[1])-1;
+                        normIndex = Integer.parseInt(s[2])-1;
+                        
+                        resultVertices.add(vertices.get(vertIndex*3));
+                        resultVertices.add(vertices.get(vertIndex*3+1));
+                        resultVertices.add(vertices.get(vertIndex*3+2));
+                        
+                        resultTextures.add(textures.get(textIndex*2+0));
+                        resultTextures.add(textures.get(textIndex*2+1));
+                        
+                        resultNormals.add(normals.get(normIndex*3+0));
+                        resultNormals.add(normals.get(normIndex*3+1));
+                        resultNormals.add(normals.get(normIndex*3+2));
+                    }
+                }
+            }
+            return new Model(resultVertices, resultNormals, resultTextures);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

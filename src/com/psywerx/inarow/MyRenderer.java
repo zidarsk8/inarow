@@ -23,91 +23,134 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.util.Log;
+import android.os.SystemClock;
 
+import com.psywerx.utils.RawReader;
+import com.psywerx.utils.ShaderHelper;
+import com.psywerx.utils.TextureHelper;
 public class MyRenderer implements GLSurfaceView.Renderer {
-
-    private static final String TAG = "MyGLRenderer";
-
-    private final float[] mMVPMatrix = new float[16];
-    private final float[] mProjMatrix = new float[16];
-    private final float[] mVMatrix = new float[16];
     
-    public volatile float dx = 0;
-    public volatile float dy = 0;
-    public volatile float dz = 0;
-
-    protected Game game;
-
-    private Context context;
-
-    private Square square;
+    private Context mContext;
     
-    public MyRenderer(Context context){
-        this.context = context;
+    private int mProgramHandle;
+    private int mPointProgramHandle;
+
+    private Model mCube;
+    
+    private float[] mViewMatrix = new float[16];
+    private float[] mModelMatrix = new float[16];
+    private float[] mProjectionMatrix = new float[16];
+    private float[] mMVPMatrix = new float[16];
+
+    private int mMVPMatrixHandle;
+    private int mMVMatrixHandle;
+    private int mPositionHandle;
+    private int mLightPosHandle;
+    private int mNormalHandle;
+    private int mTextureDataHandle;
+    private int mTextureCoordinateHandle;
+    private int mTextureUniformHandle;
+    
+    private float[] mLightModelMatrix = new float[16];
+    private final float[] mLightPosInModelSpace = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+    private final float[] mLightPosInWorldSpace = new float[4];
+    private final float[] mLightPosInEyeSpace = new float[4];
+    
+    public volatile float dx, dy, dz;
+    
+    public MyRenderer(Context context) {
+        
+        mContext = context;
+        mCube = Model.getModel(context, "cube");
     }
 
-    public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-
-        // Set the background frame color
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-        game = new Game(context);
-        square = new Square();
+    public void onDrawFrame(GL10 glUnused) {
+        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+        
+        GLES20.glUseProgram(mProgramHandle);
+        
+        long time = SystemClock.uptimeMillis() % 10000L;        
+        float angleInDegrees = (360.0f / 10000.0f) * ((int) time);               
+        
+        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix");
+        mMVMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVMatrix"); 
+        mLightPosHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_LightPos");
+        mTextureUniformHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Texture");
+        mPositionHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Position");
+        mNormalHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Normal");
+        mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate");
+        
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
+        GLES20.glUniform1i(mTextureUniformHandle, 0);
+        
+        Matrix.setIdentityM(mLightModelMatrix, 0);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -3.0f);
+        
+        Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
+        Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);    
+        
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -4.5f);
+        Matrix.scaleM(mModelMatrix, 0, dz*0.001f, dz*0.001f, 1);
+        Matrix.rotateM(mModelMatrix, 0, dx, 0.0f, 1.0f, 0.0f);
+        Matrix.rotateM(mModelMatrix, 0, dy, 1.0f, 0.0f, 0.0f);
+        
+        mCube.mVertexBuffer.position(0);
+        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, mCube.mVertexBuffer);
+        GLES20.glEnableVertexAttribArray(mPositionHandle);
+        
+        mCube.mNormalBuffer.position(0);
+        GLES20.glVertexAttribPointer(mNormalHandle, 3, GLES20.GL_FLOAT, false, 0, mCube.mNormalBuffer);
+        GLES20.glEnableVertexAttribArray(mNormalHandle);
+        
+        mCube.mTextureBuffer.position(0);
+        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, mCube.mTextureBuffer);
+        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+        
+        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
+        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+        GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
+        
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
+        
+        GLES20.glUseProgram(mPointProgramHandle);
+        final int pointMVPMatrixHandle = GLES20.glGetUniformLocation(mPointProgramHandle, "u_MVPMatrix");
+        final int pointPositionHandle = GLES20.glGetAttribLocation(mPointProgramHandle, "a_Position");
+        GLES20.glVertexAttrib3f(pointPositionHandle, mLightPosInModelSpace[0], mLightPosInModelSpace[1], mLightPosInModelSpace[2]);
+        GLES20.glDisableVertexAttribArray(pointPositionHandle);
+        
+        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mLightModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
+        GLES20.glUniformMatrix4fv(pointMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 1);
     }
 
-    public void onDrawFrame(GL10 unused) {
-
-        // Draw background color
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-
-        // Set the camera position (View matrix)
-        Matrix.setLookAtM(mVMatrix, 0, dx, dy, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
-
-        // Calculate the projection and view transformation
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
-
-        
-        
-        Matrix.scaleM(mMVPMatrix, 0, dz*0.001f, dz*0.001f, 1);
-        
-        // Draw frame
-        //game.draw(mMVPMatrix, mVMatrix);
-        square.draw(mMVPMatrix);
-    }
-
-    public void onSurfaceChanged(GL10 unused, int width, int height) {
-        // Adjust the viewport based on geometry changes,
-        // such as screen rotation
+    public void onSurfaceChanged(GL10 glUnused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
-
-        float ratio = (float) width / height;
-
-        // this projection matrix is applied to object coordinates
-        // in the onDrawFrame() method
-        Matrix.frustumM(mProjMatrix, 0, -ratio, ratio, -1, 1, 1, 20);
-
+        final float ratio = (float) width / height;
+        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1.0f, 1.0f, 1.0f, 10.0f);
     }
 
-    /**
-     * Utility method for debugging OpenGL calls. Provide the name of the call
-     * just after making it:
-     * 
-     * <pre>
-     * mColorHandle = GLES20.glGetUniformLocation(mProgram, &quot;vColor&quot;);
-     * MyGLRenderer.checkGlError(&quot;glGetUniformLocation&quot;);
-     * </pre>
-     * 
-     * If the operation is not successful, the check throws an error.
-     * 
-     * @param glOperation
-     *            - Name of the OpenGL call to check.
-     */
-    public static void checkGlError(String glOperation) {
-        int error;
-        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            Log.e(TAG, glOperation + ": glError " + error);
-            throw new RuntimeException(glOperation + ": glError " + error);
-        }
+    public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        
+        GLES20.glEnable(GLES20.GL_CULL_FACE);
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+        
+        Matrix.setLookAtM(mViewMatrix, 0, 0.0f, 0.0f, -0.5f, 0.0f, 0.0f, -5.0f, 0.0f, 1.0f, 0.0f);
+        
+        final int vertexShaderHandle = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, RawReader.readGLSL(mContext, R.raw.vertexshader));
+        final int fragmentShaderHandle = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, RawReader.readGLSL(mContext, R.raw.fragmentshader));
+        mProgramHandle = ShaderHelper.createAndLinkProgram(vertexShaderHandle, fragmentShaderHandle);
+        
+        final int pointVertexShaderHandle = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, RawReader.readGLSL(mContext, R.raw.pointvertexshader));
+        final int pointFragmentShaderHandle = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, RawReader.readGLSL(mContext, R.raw.pointfragmentshader));
+        mPointProgramHandle = ShaderHelper.createAndLinkProgram(pointVertexShaderHandle, pointFragmentShaderHandle);
+        
+        mTextureDataHandle = TextureHelper.loadTexture(mContext, R.drawable.texture);
     }
+
 }

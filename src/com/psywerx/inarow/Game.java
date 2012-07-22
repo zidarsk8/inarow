@@ -8,11 +8,11 @@ public class Game {
     public volatile int mState = 0;
     public volatile float mAngle;
     
-    private Model mModel;
+    // private Model mModel;
     
     public Game(Context context){
         //mTriangle = new Square();
-        mModel = ModelLoader.getModel(context, "piller");
+        //mModel = ModelLoader.getModel(context, "piller");
     }
 
     public void draw(float[] mMVPMatrix, float[] mVMatrix) {
@@ -27,7 +27,7 @@ public class Game {
         
 //        mSquare.draw(mMVPMatrix);
         //mTriangle.draw(mMVPMatrix);
-        mModel.draw(mMVPMatrix, mVMatrix);
+        //mModel.draw(mMVPMatrix, mVMatrix);
 
     }
 
